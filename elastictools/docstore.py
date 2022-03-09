@@ -4,7 +4,10 @@ logger = logging.getLogger(__name__)
 from ssl import create_default_context
 import sys
 
-from elasticsearch import Elasticsearch, TransportError
+from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
+from elasticsearch.exceptions import NotFoundError, TransportError
+import elasticsearch_dsl
 
 MAX_SIZE = 10000
 DEFAULT_PAGE_SIZE = 20
