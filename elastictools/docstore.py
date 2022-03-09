@@ -70,10 +70,10 @@ class Docstore():
             logger.critical('Elasticsearch cluster unavailable')
             print('CRITICAL: Elasticsearch cluster unavailable')
             sys.exit(1)
-    
+
     def status(self):
         """Returns status information from the Elasticsearch cluster.
-        
+
         >>> docstore.Docstore().status()
         {
             u'indices': {
@@ -97,17 +97,17 @@ class Docstore():
         }
         """
         return self.es.indices.stats()
-    
+
     def index_names(self):
         """Returns list of index names
         """
         return [name for name in list(self.status()['indices'].keys())]
-    
+
     def index_exists(self, indexname):
         """
         """
         return self.es.indices.exists(index=indexname)
-     
+
     def exists(self, model, document_id):
         """
         @param model:
@@ -143,10 +143,10 @@ class Docstore():
 
     def count(self, doctypes=[], query={}):
         """Executes a query and returns number of hits.
-        
+
         The "query" arg must be a dict that conforms to the Elasticsearch query DSL.
         See docstore.search_query for more info.
-        
+
         @param doctypes: list Type of object ('collection', 'entity', 'file')
         @param query: dict The search definition using Elasticsearch Query DSL
         @returns raw ElasticSearch query output
@@ -156,13 +156,13 @@ class Docstore():
             raise Exception(
                 "Can't do an empty search. Give me something to work with here."
             )
-        
+
         indices = ','.join(
             [f'{self.index_prefix}{m}' for m in doctypes]
         )
         doctypes = ','.join(doctypes)
         logger.debug(json.dumps(query))
-        
+
         return self.es.count(
             index=indices,
             body=query,
@@ -170,10 +170,10 @@ class Docstore():
 
     def search(self, doctypes=[], query={}, sort=[], fields=[], from_=0, size=MAX_SIZE):
         """Executes a query, get a list of zero or more hits.
-        
+
         The "query" arg must be a dict that conforms to the Elasticsearch query DSL.
         See docstore.search_query for more info.
-        
+
         @param doctypes: list Type of object ('collection', 'entity', 'file')
         @param query: dict The search definition using Elasticsearch Query DSL
         @param sort: list of (fieldname,direction) tuples
@@ -190,7 +190,7 @@ class Docstore():
             raise Exception(
                 "Can't do an empty search. Give me something to work with here."
             )
-        
+
         indices = ','.join(
             [f'{self.index_prefix}{m}' for m in doctypes]
         )
@@ -213,7 +213,7 @@ class Docstore():
 
 def aggs_dict(aggregations):
     """Simplify aggregations data in search results
-    
+
     input
     {
         u'format': {
@@ -242,7 +242,7 @@ def aggs_dict(aggregations):
 
 def search_query(text='', must=[], should=[], mustnot=[], aggs={}):
     """Assembles a dict conforming to the Elasticsearch query DSL.
-    
+
     Elasticsearch query dicts
     See https://www.elastic.co/guide/en/elasticsearch/guide/current/_most_important_queries.html
     - {"match": {"fieldname": "value"}}
@@ -254,14 +254,14 @@ def search_query(text='', must=[], should=[], mustnot=[], aggs={}):
     - {"range": {"fieldname.subfield": {"gt":20, "lte":31}}},
     - {"exists": {"fieldname": "title"}}
     - {"missing": {"fieldname": "title"}}
-    
+
     Elasticsearch aggregations
     See https://www.elastic.co/guide/en/elasticsearch/guide/current/aggregations.html
     aggs = {
         'formats': {'terms': {'field': 'format'}},
         'topics': {'terms': {'field': 'topics'}},
     }
-    
+
     >>> from ui import docstore,format_json
     >>> t = 'posthuman'
     >>> a = [
@@ -275,7 +275,7 @@ def search_query(text='', must=[], should=[], mustnot=[], aggs={}):
     >>> results = docstore.Docstore().search(doctypes=d, query=q, fields=f)
     >>> for x in results['hits']['hits']:
     ...     print x['_source']
-    
+
     @param text: str Free-text search.
     @param must: list of Elasticsearch query dicts (see above)
     @param should:  list of Elasticsearch query dicts (see above)
@@ -306,12 +306,12 @@ def search_query(text='', must=[], should=[], mustnot=[], aggs={}):
 
 def _clean_dict(data):
     """Remove null or empty fields; ElasticSearch chokes on them.
-    
+
     >>> d = {'a': 'abc', 'b': 'bcd', 'x':'' }
     >>> _clean_dict(d)
     >>> d
     {'a': 'abc', 'b': 'bcd'}
-    
+
     @param data: Standard DDR list-of-dicts data structure.
     """
     if data and isinstance(data, dict):
@@ -321,7 +321,7 @@ def _clean_dict(data):
 
 def _clean_sort( sort ):
     """Take list of [a,b] lists, return comma-separated list of a:b pairs
-    
+
     >>> _clean_sort( 'whatever' )
     >>> _clean_sort( [['a', 'asc'], ['b', 'asc'], 'whatever'] )
     >>> _clean_sort( [['a', 'asc'], ['b', 'asc']] )

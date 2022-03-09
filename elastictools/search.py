@@ -71,14 +71,14 @@ DEFAULT_LIMIT = 1000
 
 def es_offset(pagesize, thispage):
     """Convert Django pagination to Elasticsearch limit/offset
-    
+
     >>> es_offset(pagesize=10, thispage=1)
     0
     >>> es_offset(pagesize=10, thispage=2)
     10
     >>> es_offset(pagesize=10, thispage=3)
     20
-    
+
     @param pagesize: int Number of items per page
     @param thispage: int The current page (1-indexed)
     @returns: int offset
@@ -90,7 +90,7 @@ def es_offset(pagesize, thispage):
 
 def start_stop(limit, offset):
     """Convert Elasticsearch limit/offset to Python slicing start,stop
-    
+
     >>> start_stop(10, 0)
     0,9
     >>> start_stop(10, 1)
@@ -104,7 +104,7 @@ def start_stop(limit, offset):
 
 def limit_offset(request, results_per_page):
     """Get limit,offset values from request
-    
+
     @param request
     @param results_per_page
     @returns: limit,offset
@@ -123,17 +123,17 @@ def limit_offset(request, results_per_page):
         limit = results_per_page
         offset = 0
     return limit,offset
-    
+
 def django_page(limit, offset):
     """Convert Elasticsearch limit/offset pagination to Django page
-    
+
     >>> django_page(limit=10, offset=0)
     1
     >>> django_page(limit=10, offset=10)
     2
     >>> django_page(limit=10, offset=20)
     3
-    
+
     @param limit: int Number of items per page
     @param offset: int Start of current page
     @returns: int page
@@ -142,10 +142,10 @@ def django_page(limit, offset):
 
 def es_host_name(conn):
     """Extracts host:port from Elasticsearch conn object.
-    
+
     >>> es_host_name(Elasticsearch(settings.DOCSTORE_HOSTS))
     "<Elasticsearch([{'host': '192.168.56.1', 'port': '9200'}])>"
-    
+
     @param conn: elasticsearch.Elasticsearch with hosts/port
     @returns: str e.g. "192.168.56.1:9200"
     """
@@ -158,7 +158,7 @@ def es_host_name(conn):
 
 class SearchResults(object):
     """Nicely packaged search results for use in API and UI.
-    
+
     >>> from rg import search
     >>> q = {"fulltext":"minidoka"}
     >>> sr = search.run_search(request_data=q, request=None)
@@ -191,7 +191,7 @@ class SearchResults(object):
         self.prev_html = u''
         self.next_html = u''
         self.errors = []
-        
+
         if results:
             # objects
             self.objects = [hit for hit in results]
@@ -215,7 +215,7 @@ class SearchResults(object):
                         field_ids = '{}_ids'.format(field)
                         aggs = results.aggregations[field]
                         self.aggregations[field] = aggs[field_ids].buckets
-                     
+
                     # simple aggregations
                     else:
                         aggs = results.aggregations[field]
@@ -234,7 +234,7 @@ class SearchResults(object):
                     #            # TODO hard-coded
                     #            if (field in ['topics', 'facility']) and not (isinstance(bucket['key'], int) or bucket['key'].isdigit()):
                     #                self.errors.append(bucket)
-                    # 
+                    #
                     #else:
                     #    self.aggregations[field] = [
                     #        {
@@ -272,7 +272,7 @@ class SearchResults(object):
         self.page_next = self.this_page * self.page_size
         self.pad_before = range(0, self.page_start)
         self.pad_after = range(self.page_next, self.total)
-    
+
     def __repr__(self):
         try:
             q = self.params.dict()
@@ -299,10 +299,10 @@ class SearchResults(object):
                 None,
             ])
         return '?%s' % quote(query)
-    
+
     def to_dict(self, request, format_functions):
         """Express search results in API and Redis-friendly structure
-        
+
         @param request: HttpRequest or RestRequest
         @param format_functions: dict
         returns: dict
@@ -314,10 +314,10 @@ class SearchResults(object):
         elif hasattr(self, 'params') and self.params:
             params = deepcopy(self.params)
         return self._dict(params, {}, format_functions, request)
-    
+
     def ordered_dict(self, request, format_functions, pad=False):
         """Express search results in API and Redis-friendly structure
-        
+
         @param request: HttpRequest or RestRequest
         @param format_functions: dict
         returns: OrderedDict
@@ -329,7 +329,7 @@ class SearchResults(object):
         elif hasattr(self, 'params') and self.params:
             params = deepcopy(self.params)
         return self._dict(params, OrderedDict(), format_functions, request, pad=pad)
-    
+
     def _dict(self, params, data, format_functions, request, pad=False):
         """
         @param params: dict
@@ -355,7 +355,7 @@ class SearchResults(object):
         data['objects'] = []
         data['query'] = self.query
         data['aggregations'] = self.aggregations
-        
+
         # pad before
         if pad:
             data['objects'] += [{'n':n} for n in range(0, self.page_start)]
@@ -372,7 +372,7 @@ class SearchResults(object):
         # pad after
         if pad:
             data['objects'] += [{'n':n} for n in range(self.page_next, self.total)]
-        
+
         # API prev/next
         if self.prev_offset != None:
             data['prev_api'] = self._make_prevnext_url(
@@ -388,25 +388,25 @@ class SearchResults(object):
                 ),
                 request
             )
-        
+
         return data
 
 
 def sanitize_input(text):
     """Escape special characters
-    
+
     http://lucene.apache.org/core/old_versioned_docs/versions/2_9_1/queryparsersyntax.html
     TODO Maybe elasticsearch-dsl or elasticsearch-py do this already
     """
     if isinstance(text, bool):
         return text
     assert (isinstance(text, str)
-    
+
     BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
     for c in BAD_SEARCH_CHARS:
         text = text.replace(c, '')
     text = text.replace('  ', ' ')
-    
+
     # AND, OR, and NOT are used by lucene as logical operators.
     ## We need to escape these.
     # ...actually, we don't. We want these to be available.
@@ -417,7 +417,7 @@ def sanitize_input(text):
     #        r" {} ".format(escaped_word),
     #        text
     #    )
-    
+
     # Escape odd quotes
     quote_count = text.count('"')
     if quote_count % 2 == 1:
@@ -427,7 +427,7 @@ def sanitize_input(text):
 
 class Searcher(object):
     """Wrapper around elasticsearch_dsl.Search
-    
+
     >>> s = Searcher(index)
     >>> s.prep(request_data)
     'ok'
@@ -436,7 +436,7 @@ class Searcher(object):
     >>> d = r.to_dict(request)
     """
     params = {}
-    
+
     def __init__(self, ds, search=None):
         """
         @param ds: docstore.Docstore
@@ -450,7 +450,7 @@ class Searcher(object):
         q = OrderedDict()
         query = {}
         sort_cleaned = None
-    
+
     def __repr__(self):
         return u"<Searcher '%s', %s>" % (
             es_host_name(self.conn), self.params
@@ -467,7 +467,7 @@ class Searcher(object):
         fields_agg=SEARCH_AGG_FIELDS
     ):
         """Assemble elasticsearch_dsl.Search object
-        
+
         @param params:           dict
         @param params_whitelist: list Accept only these (SEARCH_PARAM_WHITELIST)
         @param search_models:    list Limit to these ES doctypes (SEARCH_MODELS)
@@ -475,11 +475,11 @@ class Searcher(object):
         @param fields:           list Retrieve these fields (SEARCH_INCLUDE_FIELDS)
         @param fields_nested:    list See SEARCH_NESTED_FIELDS
         @param fields_agg:       dict See SEARCH_AGG_FIELDS
-        @returns: 
+        @returns:
         """
 
         # gather inputs ------------------------------
-        
+
         # self.params is a copy of the params arg as it was passed
         # to the method.  It is used for informational purposes
         # and is passed to SearchResults.
@@ -490,7 +490,7 @@ class Searcher(object):
                 for key,val in params.items()
             }
         params = deepcopy(self.params)
-        
+
         # scrub fields not in whitelist
         bad_fields = [
             key for key in params.keys()
@@ -498,20 +498,20 @@ class Searcher(object):
         ]
         for key in bad_fields:
             params.pop(key)
-        
+
         indices = search_models
         if params.get('models'):
             indices = ','.join([self.ds.index_name(model) for model in models])
-        
+
         s = Search(using=self.conn, index=indices)
-        
+
         # only return specified fields
         s = s.source(fields)
-        
+
         # sorting
         if sort:
             s = s.sort(*sort)
-        
+
         if params.get('match_all'):
             s = s.query('match_all')
         elif params.get('fulltext'):
@@ -529,7 +529,7 @@ class Searcher(object):
                     default_operator='AND',
                 )
             )
-        
+
         elif params.get('creators'):
             q = Q('bool',
                   must=[Q('nested',
@@ -538,7 +538,7 @@ class Searcher(object):
                   )]
             )
             s = s.query(q)
-        
+
         elif params.get('topics') or params.get('facility'):
             # SPECIAL CASE FOR DDRPUBLIC TOPICS, FACILITY BROWSE PAGES
             if params.get('topics'):
@@ -568,13 +568,13 @@ class Searcher(object):
 
         # filters
         for key,val in params.items():
-            
+
             if key in fields_nested:
                 # Instead of nested search on topics.id or facility.id
                 # search on denormalized topics_id or facility_id fields.
                 fieldname = '%s_id' % key
                 s = s.filter('term', **{fieldname: val})
-    
+
                 ## search for *ALL* the topics (AND)
                 #for term_id in val:
                 #    s = s.filter(
@@ -587,7 +587,7 @@ class Searcher(object):
                 #          ]
                 #        )
                 #    )
-                
+
                 ## search for *ANY* of the topics (OR)
                 #s = s.query(
                 #    Q('bool',
@@ -599,14 +599,14 @@ class Searcher(object):
                 #      ]
                 #    )
                 #)
-    
+
             elif (key in params_whitelist) and val:
                 s = s.filter('term', **{key: val})
                 # 'term' search is for single choice, not multiple choice fields(?)
-        
+
         # aggregations
         for fieldname,field in fields_agg.items():
-            
+
             # nested aggregation (Elastic docs: https://goo.gl/xM8fPr)
             if fieldname == 'topics':
                 s.aggs.bucket('topics', 'nested', path='topics') \
@@ -619,16 +619,16 @@ class Searcher(object):
                 #   {u'key': u'69', u'doc_count': 9}
                 #   {u'key': u'68', u'doc_count': 2}
                 #   {u'key': u'62', u'doc_count': 1}
-            
+
             # simple aggregations
             else:
                 s.aggs.bucket(fieldname, 'terms', field=field)
-        
+
         self.s = s
-    
+
     def execute(self, limit, offset):
         """Execute a query and return SearchResults
-        
+
         @param limit: int
         @param offset: int
         @returns: SearchResults
@@ -650,28 +650,28 @@ class Searcher(object):
 
 def search(hosts, models=[], parent=None, filters=[], fulltext='', limit=10000, offset=0, page=None, aggregations=False):
     """Fulltext search using Elasticsearch query_string syntax.
-    
+
     Note: More approachable, higher-level function than DDR.docstore.search.
-    
+
     Full-text search strings:
         fulltext="seattle"
         fulltext="fusa OR teruo"
         fulltext="fusa AND teruo"
         fulltext="+fusa -teruo"
         fulltext="title:seattle"
-    
+
     Note: Quoting inside strings is not (yet?) supported in the
     command-line version.
-    
+
     Specify parent object and doctype/model:
         parent="ddr-densho-12"
         parent="ddr-densho-1000-1-"
         doctypes=['entity','segment']
-    
+
     Filter on certain fields (filters may repeat):
         filter=['topics:373,27']
         filter=['topics:373', 'facility=12']
-    
+
     @param hosts dict: settings.DOCSTORE_HOST
     @param models list: Restrict to one or more models.
     @param parent str: ID of parent object (partial OK).
@@ -683,7 +683,7 @@ def search(hosts, models=[], parent=None, filters=[], fulltext='', limit=10000, 
     """
     if not models:
         models = SEARCH_MODELS
-        
+
     if filters:
         data = {}
         for f in filters:
@@ -693,13 +693,13 @@ def search(hosts, models=[], parent=None, filters=[], fulltext='', limit=10000, 
         filters = data
     else:
         filters = {}
-        
+
     if page and offset:
         Exception("Error: Specify either offset OR page, not both.")
     if page:
         thispage = int(page)
         offset = es_offset(limit, thispage)
-    
+
     searcher = Searcher()
     searcher.prepare(params={
         'fulltext': fulltext,
