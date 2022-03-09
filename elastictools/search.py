@@ -400,7 +400,7 @@ def sanitize_input(text):
     """
     if isinstance(text, bool):
         return text
-    assert (isinstance(text, str)
+    assert (isinstance(text, str))
 
     BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
     for c in BAD_SEARCH_CHARS:
