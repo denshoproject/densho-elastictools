@@ -17,144 +17,55 @@ from . import docstore
 DEFAULT_LIMIT = 1000
 
 # whitelist of params recognized in URL query
-# TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_PARAM_WHITELIST = [
-    'fulltext',
-    'sort',
-    'topics',
-    'facility',
-    'model',
-    'models',
-    'parent',
-    'status',
-    'public',
-    'topics',
-    'facility',
-    'contributor',
-    'creators',
-    'format',
-    'genre',
-    'geography',
-    'language',
-    'location',
-    'mimetype',
-    'persons',
-    'rights',
-]
-
-NAMESDB_SEARCH_PARAM_WHITELIST = [
-    'fulltext',
-    'm_camp',
-]
+#SEARCH_PARAM_WHITELIST = [
+#    'fulltext',
+#    'sort',
+#    'topics',
+#    'facility',
+#    ...
+#]
 
 # fields where the relevant value is nested e.g. topics.id
-# TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_NESTED_FIELDS = [
-    'facility',
-    'topics',
-]
+#SEARCH_NESTED_FIELDS = [
+#    'facility',
+#    'topics',
+#]
 
-# TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_AGG_FIELDS = {
-    #'model': 'model',
-    #'status': 'status',
-    #'public': 'public',
-    #'contributor': 'contributor',
-    #'creators': 'creators.namepart',
-    'facility': 'facility.id',
-    'format': 'format',
-    'genre': 'genre',
-    #'geography': 'geography.term',
-    #'language': 'language',
-    #'location': 'location',
-    #'mimetype': 'mimetype',
-    #'persons': 'persons',
-    'rights': 'rights',
-    'topics': 'topics.id',
-}
+#SEARCH_AGG_FIELDS = {
+#    'facility': 'facility.id',
+#    'format': 'format',
+#    'genre': 'genre',
+#    'topics': 'topics.id',
+#}
 
-# TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_MODELS = [
-    'ddrcollection',
-    'ddrentity',
-    'ddrsegment',
-]
-
-NAMESDB_SEARCH_MODELS = ['names-record']
+#SEARCH_MODELS = [
+#    'ddrcollection',
+#    'ddrentity',
+#    'ddrsegment',
+#]
 
 # fields searched by query e.g. query will find search terms in these fields
-# TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_INCLUDE_FIELDS = [
-    # ddr object fields
-    'id',
-    'model',
-    'links_html',
-    'links_json',
-    'links_img',
-    'links_thumb',
-    'links_children',
-    'status',
-    'public',
-    'title',
-    'description',
-    'contributor',
-    'creators',
-    'facility',
-    'format',
-    'genre',
-    'geography',
-    'label',
-    'language',
-    'location',
-    'persons',
-    'rights',
-    'topics',
-    # narrator fields
-    'image_url',
-    'display_name',
-    'bio',
-]
+#SEARCH_INCLUDE_FIELDS = [
+#    'id',
+#    'model',
+#    'links_html',
+#    'links_json',
+#    'links_img',
+#    'links_thumb',
+#    'links_children',
+#    'status',
+#    'public',
+#    'title',
+#    'description',
+#    ...
+#]
 
-# TODO move to ddr-defs/repo_models/elastic.py?
-SEARCH_FORM_LABELS = {
-    'model': 'Model',
-    'status': 'Status',
-    'public': 'Public',
-    'contributor': 'Contributor',
-    'creators.namepart': 'Creators',
-    'facility': 'Facility',
-    'format': 'Format',
-    'genre': 'Genre',
-    'geography.term': 'Geography',
-    'language': 'Language',
-    'location': 'Location',
-    'mimetype': 'Mimetype',
-    'persons': 'Persons',
-    'rights': 'Rights',
-    'topics': 'Topics',
-}
-
-NAMESDB_SEARCH_FORM_LABELS = {
-    'm_camp': 'Camp',
-}
-
-## TODO should this live in models?
-#def _vocab_choice_labels(field):
-#    return {
-#        str(term['id']): term['title']
-#        for term in vocab.get_vocab(
-#            os.path.join(settings.VOCAB_TERMS_URL % field)
-#        )['terms']
-#    }
-#VOCAB_TOPICS_IDS_TITLES = {
-#    'facility': _vocab_choice_labels('facility'),
-#    'format': _vocab_choice_labels('format'),
-#    'genre': _vocab_choice_labels('genre'),
-#    'language': _vocab_choice_labels('language'),
-#    'public': _vocab_choice_labels('public'),
-#    'rights': _vocab_choice_labels('rights'),
-#    'status': _vocab_choice_labels('status'),
-#    'topics': _vocab_choice_labels('topics'),
+#SEARCH_FORM_LABELS = {
+#    'model': 'Model',
+#    'facility': 'Facility',
+#    'format': 'Format',
+#    'geography.term': 'Geography',
+#    ...
 #}
 
 
