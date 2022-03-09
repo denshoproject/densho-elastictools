@@ -4,8 +4,6 @@ logger = logging.getLogger(__name__)
 from ssl import create_default_context
 import sys
 
-from django.conf import settings
-
 from elasticsearch import Elasticsearch, TransportError
 
 MAX_SIZE = 10000
@@ -16,7 +14,7 @@ STATUS_OK = ['completed']
 PUBLIC_OK = [1,'1']
 
 
-def get_elasticsearch():
+def get_elasticsearch(settings):
     # TODO simplify this once everything is using SSL/passwords
     if settings.DOCSTORE_SSL_CERTFILE and settings.DOCSTORE_PASSWORD:
         context = create_default_context(cafile=settings.DOCSTORE_SSL_CERTFILE)
@@ -45,32 +43,26 @@ def get_elasticsearch():
 
 class Docstore():
 
-    def __init__(self, index_prefix, hosts=settings.DOCSTORE_HOST, connection=None):
+    def __init__(self, index_prefix, host, settings, connection=None):
         self.index_prefix = index_prefix
-        self.hosts = hosts
+        self.host = host
         if connection:
             self.es = connection
         else:
-            self.es = get_elasticsearch()
-    
+            self.es = get_elasticsearch(settings)
+
     def index_name(self, model):
         return f'{self.index_prefix}{model}'
-    
+
     def __repr__(self):
         return "<%s.%s %s:%s*>" % (
             self.__module__, self.__class__.__name__,
-            self.hosts, self.index_prefix
+            self.host, self.index_prefix
         )
-    
-    def print_configs(self):
-        print('CONFIG_FILES:           %s' % settings.CONFIG_FILES)
-        print('')
-        print('DOCSTORE_HOST:          %s' % settings.DOCSTORE_HOST)
-        print('')
-    
+
     def health(self):
         return self.es.cluster.health()
-    
+
     def start_test(self):
         try:
             self.es.cluster.health()
@@ -125,17 +117,17 @@ class Docstore():
             index=self.index_name(model),
             id=document_id
         )
-    
+
     def url(self, model, document_id):
         """
         @param model:
         @param document_id:
         """
-        return f'http://{settings.DOCSTORE_HOST}/{self.index_prefix}{model}/_doc/{document_id}'
-    
+        return f'http://{self.host}/{self.index_prefix}{model}/_doc/{document_id}'
+
     def get(self, model, document_id, fields=None):
         """Get a single document by its id.
-        
+
         @param model:
         @param document_id:
         @param fields: boolean Only return these fields
@@ -176,7 +168,7 @@ class Docstore():
             body=query,
         )
 
-    def search(self, doctypes=[], query={}, sort=[], fields=[], from_=0, size=settings.MAX_SIZE):
+    def search(self, doctypes=[], query={}, sort=[], fields=[], from_=0, size=MAX_SIZE):
         """Executes a query, get a list of zero or more hits.
         
         The "query" arg must be a dict that conforms to the Elasticsearch query DSL.
