@@ -21,7 +21,6 @@ setup(
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
@@ -30,7 +29,7 @@ setup(
     ],
     description="Tools for using Elasticsearch as a document store and search engine",
     install_requires=requirements,
-    license="BSD license",
+    license="TBD",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='elastictools',
