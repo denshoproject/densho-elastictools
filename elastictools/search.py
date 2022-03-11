@@ -477,6 +477,9 @@ class Searcher(object):
         @param fields_agg:       dict See SEARCH_AGG_FIELDS
         @returns:
         """
+        encycrg = False
+        if 'published_rg' in params.keys():
+            encycrg = True
 
         # gather inputs ------------------------------
 
@@ -504,6 +507,9 @@ class Searcher(object):
             indices = ','.join([self.ds.index_name(model) for model in models])
 
         s = Search(using=self.conn, index=indices)
+
+        if encycrg:
+            s = s.filter('term', published_rg=True)
 
         # only return specified fields
         s = s.source(fields)
