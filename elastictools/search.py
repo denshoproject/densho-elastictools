@@ -477,8 +477,11 @@ class Searcher(object):
         @param fields_agg:       dict See SEARCH_AGG_FIELDS
         @returns:
         """
+        encycfront = False
         encycrg = False
-        if 'published_rg' in params.keys():
+        if 'published_encyc' in params.keys():
+            encycfront = True
+        elif 'published_rg' in params.keys():
             encycrg = True
 
         # gather inputs ------------------------------
@@ -541,6 +544,15 @@ class Searcher(object):
                   must=[Q('nested',
                           path='creators',
                           query=Q('term', creators__namepart=params.pop('creators'))
+                  )]
+            )
+            s = s.query(q)
+
+        elif params.get('persons'):
+            q = Q('bool',
+                  must=[Q('nested',
+                          path='persons',
+                          query=Q('term', persons__namepart=params.pop('persons'))
                   )]
             )
             s = s.query(q)
