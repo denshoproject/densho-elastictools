@@ -129,16 +129,16 @@ class Docstore():
         """
         return f'http://{self.host}/{self.index_prefix}{model}/_doc/{document_id}'
 
-    def get(self, model, document_id, fields=None):
+    def get(self, model, es_class, document_id, fields=None):
         """Get a single document by its id.
 
         @param model:
+        @param es_class:
         @param document_id:
         @param fields: boolean Only return these fields
         @returns: repo_models.elastic.ESObject or None
         """
-        ES_Class = ELASTICSEARCH_CLASSES_BY_MODEL[model]
-        return ES_Class.get(
+        return es_class.get(
             id=document_id,
             index=self.index_name(model),
             using=self.es,
