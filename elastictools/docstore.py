@@ -7,6 +7,7 @@ import sys
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
 from elasticsearch.exceptions import NotFoundError, TransportError
+from elasticsearch.exceptions import SerializationError
 import elasticsearch_dsl
 
 MAX_SIZE = 10000
@@ -69,9 +70,9 @@ class Docstore():
     def start_test(self):
         try:
             self.es.cluster.health()
-        except TransportError:
-            logger.critical('Elasticsearch cluster unavailable')
-            print('CRITICAL: Elasticsearch cluster unavailable')
+        except TransportError as err:
+            logger.critical(f'Elasticsearch cluster unavailable {err}')
+            print(f'CRITICAL: Elasticsearch cluster unavailable {err}')
             sys.exit(1)
 
     def status(self):
