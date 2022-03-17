@@ -17,7 +17,7 @@ Densho Elastictools
 Tools for using Elasticsearch as a document store and search engine
 
 
-* Free software: BSD license
+* Free software: license TBD
 * Documentation: https://elastictools.readthedocs.io.
 
 
