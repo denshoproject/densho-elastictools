@@ -216,8 +216,8 @@ class Docstore():
         )
         doctypes = ','.join(doctypes)
         logger.debug(json.dumps(query))
-        _clean_dict(sort)
-        sort_cleaned = _clean_sort(sort)
+        clean_dict(sort)
+        sort_cleaned = clean_sort(sort)
         fields = ','.join(fields)
 
         results = self.es.search(
@@ -324,11 +324,11 @@ def search_query(text='', must=[], should=[], mustnot=[], aggs={}):
         body['aggregations'] = aggs
     return body
 
-def _clean_dict(data):
+def clean_dict(data):
     """Remove null or empty fields; ElasticSearch chokes on them.
 
     >>> d = {'a': 'abc', 'b': 'bcd', 'x':'' }
-    >>> _clean_dict(d)
+    >>> clean_dict(d)
     >>> d
     {'a': 'abc', 'b': 'bcd'}
 
@@ -339,12 +339,12 @@ def _clean_dict(data):
             if not data[key]:
                 del(data[key])
 
-def _clean_sort( sort ):
+def clean_sort( sort ):
     """Take list of [a,b] lists, return comma-separated list of a:b pairs
 
-    >>> _clean_sort( 'whatever' )
-    >>> _clean_sort( [['a', 'asc'], ['b', 'asc'], 'whatever'] )
-    >>> _clean_sort( [['a', 'asc'], ['b', 'asc']] )
+    >>> clean_sort( 'whatever' )
+    >>> clean_sort( [['a', 'asc'], ['b', 'asc'], 'whatever'] )
+    >>> clean_sort( [['a', 'asc'], ['b', 'asc']] )
     'a:asc,b:asc'
     """
     cleaned = ''
