@@ -6,10 +6,8 @@ logger = logging.getLogger(__name__)
 import re
 from urllib.parse import quote, urlunsplit
 
-from django.http.request import HttpRequest
 from elasticsearch_dsl import Search, Q
 from elasticsearch_dsl.query import QueryString
-from rest_framework.request import Request as RestRequest
 
 from . import docstore
 
@@ -306,11 +304,11 @@ class SearchResults(object):
         @param format_functions: dict
         returns: dict
         """
-        if isinstance(request, HttpRequest):
+        if 'HttpRequest' in str(request.__class__):     # django HttpRequest
             params = request.GET.copy()
-        elif isinstance(request, RestRequest):
+        elif 'rest_framework.request.' in str(request): # rest_framework Request
             params = request.query_params.dict()
-        elif hasattr(self, 'params') and self.params:
+        elif hasattr(self, 'params') and self.params:   # or just a dict
             params = deepcopy(self.params)
         return self._dict(params, {}, format_functions, request)
 
@@ -321,11 +319,11 @@ class SearchResults(object):
         @param format_functions: dict
         returns: OrderedDict
         """
-        if isinstance(request, HttpRequest):
+        if 'HttpRequest' in str(request.__class__):     # django HttpRequest
             params = request.GET.copy()
-        elif isinstance(request, RestRequest):
+        elif 'rest_framework.request.' in str(request): # rest_framework Request
             params = request.query_params.dict()
-        elif hasattr(self, 'params') and self.params:
+        elif hasattr(self, 'params') and self.params:   # or just a dict
             params = deepcopy(self.params)
         return self._dict(params, OrderedDict(), format_functions, request, pad=pad)
 
