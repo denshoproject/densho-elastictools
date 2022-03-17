@@ -19,6 +19,11 @@ PUBLIC_OK = [1,'1']
 
 
 def get_elasticsearch(settings):
+    """Gets Elasticsearch connection using app settings
+
+    Will use an SSL certfile and/or HTTP Basic password if these are defined
+    in config/settings.
+    """
     # TODO simplify this once everything is using SSL/passwords
     if settings.DOCSTORE_SSL_CERTFILE and settings.DOCSTORE_PASSWORD:
         context = create_default_context(cafile=settings.DOCSTORE_SSL_CERTFILE)
@@ -55,9 +60,6 @@ class Docstore():
         else:
             self.es = get_elasticsearch(settings)
 
-    def index_name(self, model):
-        return f'{self.index_prefix}{model}'
-
     def __repr__(self):
         return "<%s.%s %s:%s*>" % (
             self.__module__, self.__class__.__name__,
@@ -68,11 +70,17 @@ class Docstore():
         return self.es.cluster.health()
 
     def start_test(self):
+        """Exit with an error if Elasticsearch cluster is unavailable
+
+        IMPORTANT: This is meant to be run at application startup
+        """
         try:
             self.es.cluster.health()
         except TransportError as err:
-            logger.critical(f'Elasticsearch cluster unavailable {err}')
-            print(f'CRITICAL: Elasticsearch cluster unavailable {err}')
+            logger.critical(f'Elasticsearch cluster unavailable')
+            logger.critical(err)
+            print(f'CRITICAL: Elasticsearch cluster unavailable')
+            print(err)
             sys.exit(1)
 
     def status(self):
@@ -102,18 +110,27 @@ class Docstore():
         """
         return self.es.indices.stats()
 
+    def index_name(self, model):
+        """Returns indexname for specified model
+
+        Indexes are named with an app prefix to prevent multiple apps from
+        defining indexes with the same name.
+        """
+        return f'{self.index_prefix}{model}'
+
     def index_names(self):
-        """Returns list of index names
+        """Returns list of index names in use
         """
         return [name for name in list(self.status()['indices'].keys())]
 
     def index_exists(self, indexname):
-        """
+        """Indicate whether the specified index exists
         """
         return self.es.indices.exists(index=indexname)
 
     def exists(self, model, document_id):
-        """
+        """Indicate whether the specified document exists in the index
+
         @param model:
         @param document_id:
         """
@@ -123,14 +140,15 @@ class Docstore():
         )
 
     def url(self, model, document_id):
-        """
+        """Return the Elasticsearch URL for the specified document
+
         @param model:
         @param document_id:
         """
         return f'http://{self.host}/{self.index_prefix}{model}/_doc/{document_id}'
 
     def get(self, model, es_class, document_id, fields=None):
-        """Get a single document by its id.
+        """Get the specified document
 
         @param model:
         @param es_class:
@@ -160,13 +178,11 @@ class Docstore():
             raise Exception(
                 "Can't do an empty search. Give me something to work with here."
             )
-
         indices = ','.join(
             [f'{self.index_prefix}{m}' for m in doctypes]
         )
         doctypes = ','.join(doctypes)
         logger.debug(json.dumps(query))
-
         return self.es.count(
             index=indices,
             body=query,

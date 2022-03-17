@@ -3,7 +3,6 @@ from copy import deepcopy
 import json
 import logging
 logger = logging.getLogger(__name__)
-import os
 import re
 from urllib.parse import quote, urlunsplit
 
