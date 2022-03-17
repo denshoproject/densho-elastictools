@@ -6,7 +6,7 @@ import sys
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
-from elasticsearch.exceptions import NotFoundError, TransportError
+from elasticsearch.exceptions import NotFoundError, RequestError, TransportError
 from elasticsearch.exceptions import SerializationError
 import elasticsearch_dsl
 
