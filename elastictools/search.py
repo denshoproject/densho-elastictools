@@ -152,6 +152,15 @@ def es_host_name(conn):
     hostdata = json.loads(text)
     return ':'.join([hostdata['host'], str(hostdata['port'])])
 
+def _strdammit(something):
+    """Always return a str"""
+    if isinstance(something, bool):
+        if something:
+            return 'True'
+        else:
+            return 'False'
+    return str(something)
+
 
 class SearchResults(object):
     """Nicely packaged search results for use in API and UI.
@@ -345,7 +354,7 @@ class SearchResults(object):
         if params.get('page'): params.pop('page')
         if params.get('limit'): params.pop('limit')
         if params.get('offset'): params.pop('offset')
-        qs = [key + '=' + val for key,val in params.items()]
+        qs = [key + '=' + _strdammit(val) for key,val in params.items()]
         query_string = '&'.join(qs)
         data['prev_api'] = ''
         data['next_api'] = ''
