@@ -353,3 +353,25 @@ def clean_sort( sort ):
         if not 0 in all_lists:
             cleaned = ','.join([':'.join(x) for x in sort])
     return cleaned
+
+def cluster(clusters, ipaddr_port):
+    """Indicate which cluster the docstore_host setting belongs to
+
+    Sample config:
+        docstore_clusters={"green":["192.168.0.19"],"blue":["192.168.0.20"], ...}
+    """
+    if isinstance(clusters, str):
+        if clusters == '':
+            return 'docstore_clusters is empty'
+        try:
+            clusters = json.loads(clusters)
+        except json.decoder.JSONDecodeError:
+            return 'JSONDecodeError on docstore_clusters'
+    assert isinstance(clusters, dict)
+    assert isinstance(ipaddr_port, str)
+    _clusters_by_ip = {}
+    for cluster,ips in clusters.items():
+        for ip in ips:
+            _clusters_by_ip[ip] = cluster
+    ipaddr = ipaddr_port.split(':')[0]
+    return _clusters_by_ip.get(ipaddr, 'unknown')
