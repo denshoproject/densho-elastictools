@@ -6,8 +6,8 @@ import sys
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError, ConnectionTimeout
-from elasticsearch.exceptions import NotFoundError, RequestError, TransportError
-from elasticsearch.exceptions import SerializationError
+from elasticsearch.exceptions import AuthenticationException, TransportError
+from elasticsearch.exceptions import NotFoundError, RequestError, SerializationError
 import elasticsearch_dsl
 
 MAX_SIZE = 10000
@@ -80,6 +80,11 @@ class Docstore():
             logger.critical(f'Elasticsearch cluster unavailable')
             logger.critical(err)
             print(f'CRITICAL: Elasticsearch cluster unavailable')
+            print(err)
+        except AuthenticationException as err:
+            logger.critical(f'Elasticsearch cluster auth error')
+            logger.critical(err)
+            print(f'CRITICAL: Elasticsearch cluster auth error')
             print(err)
 
     def status(self):
