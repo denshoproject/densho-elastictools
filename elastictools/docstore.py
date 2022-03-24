@@ -81,7 +81,6 @@ class Docstore():
             logger.critical(err)
             print(f'CRITICAL: Elasticsearch cluster unavailable')
             print(err)
-            sys.exit(1)
 
     def status(self):
         """Returns status information from the Elasticsearch cluster.
