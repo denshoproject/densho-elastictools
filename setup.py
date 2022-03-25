@@ -11,8 +11,6 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'django>=3.2.0',
-    'djangorestframework>=3.12.0',
     'elasticsearch>=7.0.0,<8.0.0',
     'elasticsearch-dsl>=7.0.0,<8.0.0',
 ]
