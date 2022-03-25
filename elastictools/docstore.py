@@ -1,7 +1,6 @@
 import json
 import logging
 logger = logging.getLogger(__name__)
-from ssl import create_default_context
 import sys
 
 from elasticsearch import Elasticsearch
@@ -26,21 +25,17 @@ def get_elasticsearch(settings):
     """
     # TODO simplify this once everything is using SSL/passwords
     if settings.DOCSTORE_SSL_CERTFILE and settings.DOCSTORE_PASSWORD:
-        context = create_default_context(cafile=settings.DOCSTORE_SSL_CERTFILE)
-        context.check_hostname = False
         return Elasticsearch(
-            settings.DOCSTORE_HOST,
-            scheme='https', ssl_context=context,
-            port=9200,
+            f'{settings.DOCSTORE_HOST}',
             http_auth=(settings.DOCSTORE_USERNAME, settings.DOCSTORE_PASSWORD),
+            client_cert=settings.DOCSTORE_SSL_CERTFILE,
+            use_ssl=True, verify_certs=False, ssl_show_warn=False,
         )
     elif settings.DOCSTORE_SSL_CERTFILE:
-        context = create_default_context(cafile=settings.DOCSTORE_SSL_CERTFILE)
-        context.check_hostname = False
         return Elasticsearch(
-            settings.DOCSTORE_HOST,
-            scheme='https', ssl_context=context,
-            port=9200,
+            f'{settings.DOCSTORE_HOST}',
+            client_cert=settings.DOCSTORE_SSL_CERTFILE,
+            use_ssl=True, verify_certs=False, ssl_show_warn=False,
         )
     else:
         return Elasticsearch(
