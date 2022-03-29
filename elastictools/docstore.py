@@ -337,6 +337,113 @@ class DocstoreManager(Docstore):
     def delete(self, document_id, recursive=False):
         pass
 
+    def reindex(self, source, dest):
+        """Copy documents from one index to another.
+
+        @param source: str Name of source index.
+        @param dest: str Name of destination index.
+        @returns: number successful,list of paths that didn't work out
+        """
+        logger.debug('reindex(%s, %s)' % (source, dest))
+        if self.index_exists(source):
+            logger.info('Source index exists: %s' % source)
+        else:
+            return '{"status":500, "message":"Source index does not exist"}'
+        if self.index_exists(dest):
+            logger.info('Destination index exists: %s' % dest)
+        else:
+            return '{"status":500, "message":"Destination index does not exist"}'
+        version = self.es.info()['version']['number']
+        logger.debug('Elasticsearch version %s' % version)
+        if version >= '2.3':
+            logger.debug('new API')
+            body = {
+                "source": {"index": source},
+                "dest": {"index": dest}
+            }
+            results = self.es.reindex(
+                body=json.dumps(body),
+                refresh=None,
+                requests_per_second=0,
+                timeout='1m',
+                wait_for_active_shards=1,
+                wait_for_completion=False,
+            )
+        else:
+            logger.debug('pre-2.3 legacy API')
+            from elasticsearch import helpers
+            results = helpers.reindex(
+                self.es, source, dest,
+                #query=None,
+                #target_client=None,
+                #chunk_size=500,
+                #scroll=5m,
+                #scan_kwargs={},
+                #bulk_kwargs={}
+            )
+        return results
+
+    def backup(self, repository_path, snapshot, indices=[]):
+        """Make a snapshot backup of one or more Elasticsearch indices.
+
+        repository = 'dev20190827'
+        snapshot = 'dev-20190828-1007'
+        indices = ['ddrpublic-dev', 'encyc-dev']
+        agent = 'gjost'
+        memo = 'backup before upgrading'
+        from DDR import docstore
+        ds = docstore.Docstore()
+        ds.backup(repository, snapshot, indices, agent, memo)
+
+        @param repository: str
+        @param snapshot: str
+        @param indices: list
+        @returns: dict {"repository":..., "snapshot":...}
+        """
+        repository = os.path.basename(repository_path)
+        client = SnapshotClient(self.es.cluster.client)
+        # Get existing repository or make new one
+        try:
+            repo = client.get_repository(repository=repository)
+        except TransportError:
+            repo = client.create_repository(
+                repository=repository,
+                body={
+                    "type": "fs",
+                    "settings": {
+                        "location": repository_path
+                    }
+                }
+            )
+        # Get snapshot info or initiate new one
+        try:
+            snapshot = client.get(repository=repository, snapshot=snapshot)
+        except TransportError:
+            body = {
+                "indices": indices,
+                "metadata": {},
+            }
+            snapshot = client.create(
+                repository=repository, snapshot=snapshot, body=body
+            )
+        return {
+            "repository": repo,
+            "snapshot": snapshot,
+        }
+
+    def restore_snapshot(self, repository_path, snapshot, indices=[]):
+        """Restore a snapshot
+        """
+        repository = os.path.basename(repository_path)
+        client = SnapshotClient(self.es.cluster.client)
+        repo = client.get_repository(repository=repository)
+        result = client.restore(
+            repository=repository_path,
+            snapshot=snapshot,
+            body={'indices': indices},
+        )
+        return result
+
 
 def aggs_dict(aggregations):
     """Simplify aggregations data in search results
