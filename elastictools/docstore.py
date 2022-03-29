@@ -230,6 +230,114 @@ class Docstore():
         return results
 
 
+class DocstoreManager(Docstore):
+    """Subclass of Docstore with additional functions for managing indices
+    """
+
+    def __init__(self, index_prefix, host, settings, connection=None):
+        super(DocstoreManager,self).__init__(index_prefix, host, settings, connection)
+
+    def create_indices(self, classes):
+        """Create indices for each model defined in ELASTICSEARCH_CLASSES
+
+        @param classes: list of dicts w indexname,dsl_class (see create_index)
+        """
+        statuses = []
+        for i in classes:
+            status = self.create_index(
+                self.index_name(i['doctype']),
+                i['class']
+            )
+            statuses.append(status)
+        return statuses
+
+    def create_index(self, indexname, dsl_class):
+        """Creates the specified index if it does not already exist.
+
+        Uses elasticsearch-dsl classes defined in ELASTICSEARCH_CLASSES
+
+        @param indexname: str
+        @param dsl_class: elasticsearch_dsl.Document class
+        @returns: JSON dict with status codes and responses
+        """
+        logger.debug('creating index {}'.format(indexname))
+        if self.index_exists(indexname):
+            status = '{"status":400, "message":"Index exists"}'
+            logger.debug('Index exists')
+            #print('Index exists')
+        else:
+            index = elasticsearch_dsl.Index(indexname)
+            #print('index {}'.format(index))
+            index.aliases(default={})
+            #print('registering')
+            out = index.document(dsl_class).init(index=indexname, using=self.es)
+            if out:
+                status = out
+            elif self.index_exists(indexname):
+                status = {
+                    "name": indexname,
+                    "present": True,
+                }
+            #print(status)
+            #print('creating index')
+        return status
+
+    def delete_indices(self, classes):
+        """Deletes indices for each model defined in ELASTICSEARCH_CLASSES
+
+        @param classes: list of dicts w indexname,dsl_class (see create_index)
+        """
+        statuses = []
+        for i in classes:
+            status = self.delete_index(
+                self.index_name(i['doctype'])
+            )
+            statuses.append(status)
+        return statuses
+
+    def delete_index(self, indexname):
+        """Delete the specified index.
+
+        @returns: JSON dict with status code and response
+        """
+        logger.debug('deleting index: %s' % indexname)
+        if self.index_exists(indexname):
+            status = self.es.indices.delete(index=indexname)
+        else:
+            status = {
+                "name": indexname,
+                "status": 500,
+                "message": "Index does not exist",
+            }
+        logger.debug(status)
+        return status
+
+    def get_mappings(self):
+        """Get mappings from Elasticsearch
+
+        @returns: str JSON
+        """
+        return self.es.indices.get_mapping()
+
+    def post_json(self, indexname, document_id, json_text):
+        """POST the specified JSON document as-is.
+
+        @param indexname: str
+        @param document_id: str
+        @param json_text: str JSON-formatted string
+        @returns: dict Status info.
+        """
+        logger.debug('post_json(%s, %s)' % (indexname, document_id))
+        return self.es.index(
+            index=self.index_name(indexname),
+            id=document_id,
+            body=json_text
+        )
+
+    def delete(self, document_id, recursive=False):
+        pass
+
+
 def aggs_dict(aggregations):
     """Simplify aggregations data in search results
 
