@@ -17,29 +17,34 @@ STATUS_OK = ['completed']
 PUBLIC_OK = [1,'1']
 
 
-def get_elasticsearch(settings):
+def get_elasticsearch(settings, docstore_host=None):
     """Gets Elasticsearch connection using app settings
 
     Will use an SSL certfile and/or HTTP Basic password if these are defined
     in config/settings.
+
+    @param settings: django.conf.settings or DDR/encyc config module
+    @param docstore_host: str IP:port, overrides DOCSTORE_HOST in settings
     """
+    if not docstore_host:
+        docstore_host = settings.DOCSTORE_HOST
     # TODO simplify this once everything is using SSL/passwords
     if settings.DOCSTORE_SSL_CERTFILE and settings.DOCSTORE_PASSWORD:
         return Elasticsearch(
-            f'{settings.DOCSTORE_HOST}',
+            docstore_host,
             http_auth=(settings.DOCSTORE_USERNAME, settings.DOCSTORE_PASSWORD),
             client_cert=settings.DOCSTORE_SSL_CERTFILE,
             use_ssl=True, verify_certs=False, ssl_show_warn=False,
         )
     elif settings.DOCSTORE_SSL_CERTFILE:
         return Elasticsearch(
-            f'{settings.DOCSTORE_HOST}',
+            docstore_host,
             client_cert=settings.DOCSTORE_SSL_CERTFILE,
             use_ssl=True, verify_certs=False, ssl_show_warn=False,
         )
     else:
         return Elasticsearch(
-            settings.DOCSTORE_HOST,
+            docstore_host,
             scheme='http',
             port=9200,
         )
@@ -53,7 +58,7 @@ class Docstore():
         if connection:
             self.es = connection
         else:
-            self.es = get_elasticsearch(settings)
+            self.es = get_elasticsearch(settings, host)
 
     def __repr__(self):
         return "<%s.%s %s:%s*>" % (
