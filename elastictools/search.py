@@ -360,7 +360,7 @@ class SearchResults(object):
         data['next_api'] = ''
         data['objects'] = []
         data['query'] = self.query
-        data['aggregations'] = self.aggregations
+        data['aggregations'] = {}
 
         # pad before
         if pad:
@@ -394,6 +394,14 @@ class SearchResults(object):
                 ),
                 request
             )
+
+        # Convert AttrDicts in aggregations to JSON-serializable list-of-dicts
+        # (elasticsearch_dsl fails to do this).
+        data['aggregations'] = {
+            key: [attrdict.to_dict() for attrdict in agg]
+            for key,agg in self.aggregations.items()
+            if agg
+        }
 
         return data
 
