@@ -417,7 +417,7 @@ def sanitize_input(text):
         return text
     assert (isinstance(text, str))
 
-    BAD_SEARCH_CHARS = r'!+/:[\]^{}~'
+    BAD_SEARCH_CHARS = r'!+/[\]^{}~'
     for c in BAD_SEARCH_CHARS:
         text = text.replace(c, '')
     text = text.replace('  ', ' ')
