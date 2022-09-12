@@ -564,12 +564,7 @@ class Searcher(object):
             s = s.query(q)
 
         elif params.get('persons'):
-            q = Q('bool',
-                  must=[Q('nested',
-                          path='persons',
-                          query=Q('term', persons__namepart=params.pop('persons'))
-                  )]
-            )
+            q = Q('bool', must=[Q('term', persons=params.pop('persons'))])
             s = s.query(q)
 
         elif params.get('topics') or params.get('facility'):
