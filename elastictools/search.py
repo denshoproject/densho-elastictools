@@ -480,6 +480,7 @@ class Searcher(object):
         fields,            # SEARCH_INCLUDE_FIELDS
         fields_nested,     # SEARCH_NESTED_FIELDS
         fields_agg,        # SEARCH_AGG_FIELDS
+        wildcards,         # False
     ):
         """Assemble elasticsearch_dsl.Search object
 
@@ -490,6 +491,7 @@ class Searcher(object):
         @param fields:           list Retrieve these fields (SEARCH_INCLUDE_FIELDS)
         @param fields_nested:    list See SEARCH_NESTED_FIELDS
         @param fields_agg:       dict See SEARCH_AGG_FIELDS
+        @param wildcards:        bool Analyze wildcards, allow leading wildcards
         @returns:
         """
         encycfront = False
@@ -548,8 +550,8 @@ class Searcher(object):
                 QueryString(
                     query=fulltext,
                     fields=fields,
-                    analyze_wildcard=False,
-                    allow_leading_wildcard=False,
+                    analyze_wildcard=wildcards,
+                    allow_leading_wildcard=wildcards,
                     default_operator='AND',
                 )
             )
