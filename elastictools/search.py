@@ -522,9 +522,13 @@ class Searcher(object):
         for key in bad_fields:
             params.pop(key)
 
+        # models in params overrides
         indices = search_models
         if params.get('models'):
-            indices = ','.join([self.ds.index_name(model) for model in models])
+            indices = ','.join([
+                self.ds.index_name(model.strip())
+                for model in params['models'].split(',')
+            ])
 
         s = Search(using=self.conn, index=indices)
 
