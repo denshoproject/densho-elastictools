@@ -560,6 +560,15 @@ class Searcher(object):
                 )
             )
 
+        elif params.get('narrator'):
+            q = Q('bool',
+                  must=[Q('nested',
+                          path='creators',
+                          query=Q('term', creators__id=params.pop('narrator'))
+                  )]
+            )
+            s = s.query(q)
+
         elif params.get('creators'):
             q = Q('bool',
                   must=[Q('nested',
