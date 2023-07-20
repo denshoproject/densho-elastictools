@@ -1,8 +1,24 @@
 #!/usr/bin/env python
 
-"""The setup script."""
-
+import codecs
+import os
+import re
 from setuptools import setup, find_packages
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+def read(*parts):
+    # intentionally *not* adding an encoding option to open
+    return codecs.open(os.path.join(here, *parts), 'r').read()
+
+def find_version(*file_paths):
+    #version_file = read(*file_paths)
+    #version_match = re.search(r"^VERSION = ['\"]([^'\"]*)['\"]",
+    #                          version_file, re.M)
+    #if version_match:
+    #    return version_match.group(1)
+    #raise RuntimeError("Unable to find version string.")
+    return read(*file_paths)
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -41,6 +57,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/denshoproject/densho-elastictools',
-    version='1.1.0',
+    version = find_version('VERSION'),
     zip_safe=False,
 )
