@@ -1,24 +1,22 @@
 #!/usr/bin/env python
 
 import codecs
-import os
-import re
+import os.path
 from setuptools import setup, find_packages
 
-here = os.path.abspath(os.path.dirname(__file__))
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
 
-def read(*parts):
-    # intentionally *not* adding an encoding option to open
-    return codecs.open(os.path.join(here, *parts), 'r').read()
-
-def find_version(*file_paths):
-    #version_file = read(*file_paths)
-    #version_match = re.search(r"^VERSION = ['\"]([^'\"]*)['\"]",
-    #                          version_file, re.M)
-    #if version_match:
-    #    return version_match.group(1)
-    #raise RuntimeError("Unable to find version string.")
-    return read(*file_paths)
+def get_version(rel_path):
+    # https://packaging.python.org/en/latest/guides/single-sourcing-package-version/
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -57,6 +55,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/denshoproject/densho-elastictools',
-    version = find_version('VERSION'),
+    version=get_version('elastictools/__init__.py'),
     zip_safe=False,
 )
