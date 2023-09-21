@@ -560,6 +560,17 @@ class Searcher(object):
                 )
             )
 
+        # new {'namepart':'...', 'role':'narrator', 'oh_id':123}
+        elif params.get('creators.oh_id'):
+            q = Q('bool',
+                  must=[Q('nested',
+                          path='creators',
+                          query=Q('term', creators__oh_id=params.pop('creators.oh_id'))
+                  )]
+            )
+            s = s.query(q)
+        # old {'namepart':'...', 'role':'narrator', 'id':123}
+        # TODO remove backwards-compatibility after creators.id converted
         elif params.get('narrator'):
             q = Q('bool',
                   must=[Q('nested',
