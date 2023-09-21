@@ -2,4 +2,4 @@
 
 __author__ = """Geoffrey Jost"""
 __email__ = 'geoffrey.jost@densho.org'
-__version__ = '1.1.2'
+__version__ = '1.1.3'
